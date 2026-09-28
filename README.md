@@ -1,4 +1,12 @@
-<h1 align="center">BPB Panel</h1>
+# BPB Worker Panel - ECH Fragment Edition
+
+Custom fork of BPB-Worker-Panel with:
+
+- Raw ECH Fragment subscription
+- VLESS `ech=` share link support
+- VLESS `fm=` FinalMask Fragment support
+- Cloudflare Worker deployment helper
+- Backward compatibility with Raw / Normal / Fragment subscriptions
 
 ### 🌏 Readme in [Farsi](README_fa.md)
 
