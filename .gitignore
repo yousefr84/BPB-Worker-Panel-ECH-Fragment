@@ -6,6 +6,7 @@
 !src/**
 !scripts/
 !scripts/build.js
+!scripts/deploy-custom-worker.sh
 !.github/
 !.github/**
 !README_fa.md

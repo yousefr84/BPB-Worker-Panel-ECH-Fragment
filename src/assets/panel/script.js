@@ -268,8 +268,9 @@ function generateSubUrl(type, core, tag) {
     const url = new URL(`./sub/${type}`, window.location.href);
     url.searchParams.append('app', core);
     url.hash = `💦 BPB ${tag}`;
+    const isRaw = ['raw', 'raw-ech-fragment'].includes(type);
 
-    if (core === 'sing-box' && type !== 'raw') {
+    if (core === 'sing-box' && !isRaw) {
         return `sing-box://import-remote-profile?url=${url.href}`;
     }
 
@@ -1158,7 +1159,7 @@ function renderSubscriptions(subscriptions) {
                 ctaSection.append(qrBtn, copyBtn);
             }
 
-            if (type !== 'raw') {
+            if (!['raw', 'raw-ech-fragment'].includes(type)) {
                 const dlBtn = elm('button', { title: 'Download config', onclick: () => dlUrl(url) }, createIcon('download'));
                 ctaSection.appendChild(dlBtn);
             }

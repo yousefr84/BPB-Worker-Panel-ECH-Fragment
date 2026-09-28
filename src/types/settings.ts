@@ -177,7 +177,7 @@ interface ClientCategory {
 }
 
 export interface SubsCategory {
-    label: 'Normal' | 'Fragment' | 'Raw' | 'Warp' | 'Warp Pro';
+    label: 'Normal' | 'Fragment' | 'Raw' | 'Raw ECH Fragment' | 'Warp' | 'Warp Pro';
     categories: ClientCategory[];
 }
 

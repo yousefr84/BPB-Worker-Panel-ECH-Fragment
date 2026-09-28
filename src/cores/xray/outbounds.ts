@@ -387,7 +387,7 @@ function buildSockopt(
     };
 }
 
-function buildTlsSettings(
+export function buildTlsSettings(
     serverName: string,
     fingerprint: Fingerprint,
     alpn: string,
@@ -445,7 +445,7 @@ function buildUDPNoises(panelNoises: XrUdpNoise[]): Noise[] {
     });
 }
 
-function buildFinalMask(
+export function buildFinalMask(
     isFragment: boolean,
     isUdpNoise: boolean,
     fragLength?: string,

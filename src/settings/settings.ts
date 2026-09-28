@@ -145,6 +145,12 @@ export const subscriptions: Subscription = {
             { core: 'sing-box', clients: ['husi', 'NekoBox', 'Hiddify', 'Karing'] },
         ]
     },
+    'raw-ech-fragment': {
+        label: 'Raw ECH Fragment',
+        categories: [
+            { core: 'xray', clients: [`${_V2_}N(G)`, 'MahsaNG', 'Streisand'] },
+        ]
+    },
     'warp': {
         label: 'Warp',
         categories: [
