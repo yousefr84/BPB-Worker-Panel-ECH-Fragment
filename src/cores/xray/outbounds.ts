@@ -64,14 +64,15 @@ export function buildFreedomOutbound(
     interval?: string,
     packets?: FragmentPacket
 ): Outbound {
-    const { enableTFO, enableIPv6 } = getSettings();
+    const { enableFragment, enableTFO, enableIPv6 } = getSettings();
+    const shouldFragment = enableFragment && isFragment;
     const freedomSettings: FreedomSettings = {
-        domainStrategy: isFragment ? undefined : enableIPv6 ? 'UseIPv4v6' : 'UseIPv4'
+        domainStrategy: shouldFragment ? undefined : enableIPv6 ? 'UseIPv4v6' : 'UseIPv4'
     };
 
     const streamSettings: StreamSettings = {
-        sockopt: isFragment ? buildSockopt(true, enableTFO, 'UseIP') : undefined,
-        finalmask: buildFinalMask(isFragment, isUdpNoises, length, interval, packets)
+        sockopt: shouldFragment ? buildSockopt(true, enableTFO, 'UseIP') : undefined,
+        finalmask: buildFinalMask(shouldFragment, isUdpNoises, length, interval, packets)
     };
 
     return {
@@ -96,11 +97,13 @@ export function buildWebsocketOutbound(
         vlUUID,
         trPass,
         fingerprint,
+        enableFragment,
         enableTFO,
         enableECH,
         echServerName,
         upstreamParams: { upstreamServer }
     } = getSettings();
+    const shouldFragment = enableFragment && isFragment;
 
     const isTLS = isHttps(port) || address === upstreamServer;
     const { host, sni } = selectSniHost(address, domain);
@@ -108,7 +111,7 @@ export function buildWebsocketOutbound(
         sni,
         fingerprint,
         'http/1.1',
-        enableECH && !isFragment,
+        enableECH && !shouldFragment,
         echServerName || undefined,
     ) : undefined;
 
@@ -118,7 +121,7 @@ export function buildWebsocketOutbound(
         security: isTLS ? 'tls' : 'none',
         tlsSettings,
         sockopt: buildSockopt(true, enableTFO, 'UseIP'),
-        finalmask: buildFinalMask(isFragment, false, fragLength, fragInterval)
+        finalmask: buildFinalMask(shouldFragment, false, fragLength, fragInterval)
     };
 
     if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, tag, false, {
@@ -452,8 +455,8 @@ export function buildFinalMask(
     fragDelay?: string,
     fragPacket?: FragmentPacket
 ): FinalMask | undefined {
-    if (!isFragment && !isUdpNoise) return;
     const {
+        enableFragment,
         fragmentPackets,
         fragmentLengthMin,
         fragmentLengthMax,
@@ -463,9 +466,12 @@ export function buildFinalMask(
         fragmentMaxSplitMax,
         xrayUdpNoises
     } = getSettings();
+    const shouldFragment = enableFragment && isFragment;
+
+    if (!shouldFragment && !isUdpNoise) return;
 
     return {
-        tcp: isFragment ? [
+        tcp: shouldFragment ? [
             {
                 type: 'fragment',
                 settings: {

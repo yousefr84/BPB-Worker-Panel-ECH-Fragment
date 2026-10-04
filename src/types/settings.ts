@@ -21,6 +21,7 @@ export interface KvSettings {
     ports: number[];
     fingerprint: Fingerprint;
     enableTFO: boolean;
+    enableFragment: boolean;
     fragmentMode: FragmentMode;
     fragmentLengthMin: number;
     fragmentLengthMax: number;

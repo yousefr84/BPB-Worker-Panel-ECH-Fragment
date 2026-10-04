@@ -21,6 +21,11 @@ export async function getDataset(env: Env): Promise<{
             settings = kvSettings;
         }
 
+        if (settings.enableFragment === undefined) {
+            settings.enableFragment = kvSettings.enableFragment;
+            await env.kv.put('proxySettings', JSON.stringify(settings));
+        }
+
         if (!warpAccounts) {
             warpAccounts = await fetchWarpAccounts(env);
         }
@@ -107,6 +112,7 @@ export async function updateDataset(env: Env, newSettings?: PanelSettings): Prom
             ['ports'],
             ['fingerprint'],
             ['enableTFO'],
+            ['enableFragment'],
             ['fragmentMode'],
             ['fragmentLengthMin'],
             ['fragmentLengthMax'],

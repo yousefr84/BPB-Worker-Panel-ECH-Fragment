@@ -66,21 +66,23 @@ export function buildWebsocketOutbound(
         vlUUID,
         trPass,
         fingerprint,
+        enableFragment,
         enableTFO,
         enableECH,
         echServerName,
         upstreamParams: { upstreamServer }
     } = getSettings();
+    const shouldFragment = enableFragment && isFragment;
 
     const { host, sni, allowInsecure } = selectSniHost(address, domain);
     const transport = buildTransport('ws', 'none', generateWsPath(protocol), host, undefined, 2560);
     const tls = isHttps(port) || address === upstreamServer
         ? buildTLS(
             'tls',
-            isFragment,
+            shouldFragment,
             allowInsecure,
             sni,
-            enableECH && !isFragment,
+            enableECH && !shouldFragment,
             echServerName || undefined,
             'http/1.1',
             fingerprint
@@ -239,12 +241,13 @@ function buildTLS(
     shortID?: string
 ): TLS | undefined {
     if (!['tls', 'reality'].includes(security)) return undefined;
+    const { enableFragment } = getSettings();
     const tlsAlpns = alpn?.split(',').filter(value => value !== 'h2');
 
     const tls: TLS = {
         enabled: true,
         server_name: sni,
-        record_fragment: isFragment,
+        record_fragment: enableFragment ? isFragment : undefined,
         insecure: allowInsecure,
         alpn: tlsAlpns,
         utls: {

@@ -216,6 +216,7 @@ let kvSettings: KvSettings = {
     fingerprint: 'chrome',
     bestPingInterval: 30,
     enableTFO: false,
+    enableFragment: true,
     enableECH: false,
     echServerName: '',
     customCdnAddrs: [],

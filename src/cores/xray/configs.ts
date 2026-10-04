@@ -264,12 +264,14 @@ async function addWorkerlessConfigs(configs: Config[]) {
 
 export async function getXrCustomConfigs(isFragment: boolean): Promise<Response> {
     const {
+        enableFragment,
         chainProxy,
         ports,
         mainDomain,
         customDomain,
         upstreamParams: { upstreamServer, upstreamPort }
     } = getSettings();
+    const shouldFragment = enableFragment && isFragment;
 
     const chainOutbound = chainProxy ? buildChainOutbound() : undefined;
     const domains = [mainDomain].concatIf(!!customDomain, customDomain);
@@ -282,10 +284,10 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
         let totalHosts: string[] = [];
         const proxies: Outbound[] = [];
         const chains: Outbound[] = [];
-        const totalPorts = ports.filter(port => !isFragment && domain.endsWith('workers.dev') || isHttps(port));
-        const hosts = await getConfigAddresses(domain, isFragment);
+        const totalPorts = ports.filter(port => !shouldFragment && domain.endsWith('workers.dev') || isHttps(port));
+        const hosts = await getConfigAddresses(domain, shouldFragment);
         
-        if (upstreamServer && upstreamPort && !isFragment) {
+        if (upstreamServer && upstreamPort && !shouldFragment) {
             totalPorts.unshift(upstreamPort);
             hosts.unshift(upstreamServer);
         }
@@ -298,16 +300,16 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
                 for (const host of hosts) {
                     if ((port === upstreamPort) !== (host === upstreamServer)) continue;
 
-                    const outbound = buildWebsocketOutbound('proxy', protocol, host, port, domain, isFragment);
+                    const outbound = buildWebsocketOutbound('proxy', protocol, host, port, domain, shouldFragment);
                     const proxy = modifyOutbound(outbound, `proxy-${index}`);
                     proxies.push(proxy);
 
-                    const remark = generateRemark(protocolIndex, port, host, protocol, domain, isFragment, false);
+                    const remark = generateRemark(protocolIndex, port, host, protocol, domain, shouldFragment, false);
                     const config = await buildConfig(remark, [outbound], false, false, false, false, false, [host]);
                     configs.push(config);
 
                     if (chainOutbound) {
-                        const remark = generateRemark(protocolIndex, port, host, protocol, domain, isFragment, true);
+                        const remark = generateRemark(protocolIndex, port, host, protocol, domain, shouldFragment, true);
                         const chainConfig = await buildConfig(remark, [chainOutbound, outbound], false, true, false, false, false, [host]);
                         configs.push(chainConfig);
 
@@ -322,10 +324,10 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
         }
 
         const isCustomDomain = domain === customDomain;
-        await addBestPingConfigs(configs, totalHosts, proxies, chains, isFragment, isCustomDomain);
+        await addBestPingConfigs(configs, totalHosts, proxies, chains, shouldFragment, isCustomDomain);
     }
 
-    if (isFragment) {
+    if (shouldFragment) {
         await addBestFragmentConfigs(configs, chainOutbound);
         await addWorkerlessConfigs(configs);
     }

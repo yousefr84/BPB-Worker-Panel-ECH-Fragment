@@ -85,12 +85,14 @@ async function buildConfig(
 
 export async function getSbCustomConfig(isFragment: boolean): Promise<Response> {
     const {
+        enableFragment,
         chainProxy,
         ports,
         mainDomain,
         customDomain,
         upstreamParams: { upstreamServer, upstreamPort }
     } = getSettings();
+    const shouldFragment = enableFragment && isFragment;
 
     const chainOutbound = chainProxy ? buildChainOutbound() : undefined;
     const isChain = !!chainOutbound;
@@ -106,8 +108,8 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
     };
 
     for (const domain of domains) {
-        const totalPorts = ports.filter(port => !isFragment && domain.endsWith('workers.dev') || isHttps(port));
-        const hosts = await getConfigAddresses(domain, isFragment);
+        const totalPorts = ports.filter(port => !shouldFragment && domain.endsWith('workers.dev') || isHttps(port));
+        const hosts = await getConfigAddresses(domain, shouldFragment);
         if (upstreamServer && upstreamPort) {
             totalPorts.unshift(upstreamPort);
             hosts.unshift(upstreamServer);
@@ -119,8 +121,8 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
                 for (const host of hosts) {
                     if ((port === upstreamPort) !== (host === upstreamServer)) continue;
 
-                    const tag = generateRemark(protocolIndex, port, host, protocol, domain, isFragment, false);
-                    const outbound = buildWebsocketOutbound(protocol, tag, host, port, domain, isFragment);
+                    const tag = generateRemark(protocolIndex, port, host, protocol, domain, shouldFragment, false);
+                    const outbound = buildWebsocketOutbound(protocol, tag, host, port, domain, shouldFragment);
                     outbounds.push(outbound);
                     
                     if (domain === customDomain) {
@@ -130,7 +132,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
                     }
 
                     if (isChain) {
-                        const chainTag = generateRemark(protocolIndex, port, host, protocol, domain, isFragment, true);
+                        const chainTag = generateRemark(protocolIndex, port, host, protocol, domain, shouldFragment, true);
                         const chain = structuredClone(chainOutbound);
                         chain.tag = chainTag;
                         chain.detour = tag;
